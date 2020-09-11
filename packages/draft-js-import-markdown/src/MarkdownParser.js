@@ -12,7 +12,7 @@ const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 const assign =
   Object.assign ||
-  function(obj) {
+  function (obj) {
     var i = 1;
     for (; i < arguments.length; i++) {
       var target = arguments[i];
@@ -25,7 +25,7 @@ const assign =
     return obj;
   };
 
-const noop = function() {};
+const noop = function () {};
 noop.exec = noop;
 
 var defaults = {
@@ -38,6 +38,7 @@ var defaults = {
   renderer: new Renderer(),
   xhtml: false,
   atomicImages: false,
+  linkHRefRegex: /\s*(<(?:\\[<>]?|[^\s<>\\])*>|(?:\\[()]?|\([^\s\x00-\x1f\\]*\)|[^\s\x00-\x1f()\\])*?)/,
 };
 
 /**
@@ -128,7 +129,7 @@ Lexer.rules = block;
  * Static Lex Method
  */
 
-Lexer.parse = function(src, options) {
+Lexer.parse = function (src, options) {
   var lexer = new Lexer(options);
   return lexer.parse(src);
 };
@@ -137,7 +138,7 @@ Lexer.parse = function(src, options) {
  * Preprocessing
  */
 
-Lexer.prototype.parse = function(src) {
+Lexer.prototype.parse = function (src) {
   src = src
     .replace(/\r\n|\r/g, '\n')
     .replace(/\t/g, '    ')
@@ -151,7 +152,7 @@ Lexer.prototype.parse = function(src) {
  * Lexing
  */
 
-Lexer.prototype.token = function(src, top, bq) {
+Lexer.prototype.token = function (src, top, bq) {
   var next;
   var loose;
   var cap;
@@ -385,7 +386,7 @@ var inline = {
 };
 
 inline._inside = /(?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*/;
-inline._href = /\s*(<(?:\\[<>]?|[^\s<>\\])*>|{.*}|(?:\\[()]?|\([^\s\x00-\x1f\\]*\)|[^\s\x00-\x1f()\\])*?)/;
+inline._href = options.linkHRefRegex;
 
 inline.link = replace(inline.link)('inside', inline._inside)(
   'href',
@@ -465,7 +466,7 @@ InlineLexer.rules = inline;
  * Static Lexing/Compiling Method
  */
 
-InlineLexer.parse = function(src, links, options) {
+InlineLexer.parse = function (src, links, options) {
   var inline = new InlineLexer(links, options);
   return inline.parse(src);
 };
@@ -474,7 +475,7 @@ InlineLexer.parse = function(src, links, options) {
  * Lexing/Compiling
  */
 
-InlineLexer.prototype.parse = function(src) {
+InlineLexer.prototype.parse = function (src) {
   var out = new FragmentNode();
   var link;
   var cap;
@@ -576,7 +577,7 @@ InlineLexer.prototype.parse = function(src) {
  * Compile Link
  */
 
-InlineLexer.prototype.outputLink = function(cap, link) {
+InlineLexer.prototype.outputLink = function (cap, link) {
   var href = link.href;
   var title = link.title;
 
@@ -593,7 +594,7 @@ function Renderer(options) {
   this.options = options || {};
 }
 
-Renderer.prototype.code = function(text, lang) {
+Renderer.prototype.code = function (text, lang) {
   var codeAttrs = [];
   var preAttrs = [];
   if (lang) {
@@ -604,56 +605,56 @@ Renderer.prototype.code = function(text, lang) {
   return new ElementNode('pre', preAttrs, [codeNode]);
 };
 
-Renderer.prototype.blockquote = function(childNode) {
+Renderer.prototype.blockquote = function (childNode) {
   return new ElementNode('blockquote', [], [childNode]);
 };
 
-Renderer.prototype.heading = function(childNode, level) {
+Renderer.prototype.heading = function (childNode, level) {
   return new ElementNode('h' + level, [], [childNode]);
 };
 
-Renderer.prototype.hr = function() {
+Renderer.prototype.hr = function () {
   return new ElementNode('hr', [], SELF_CLOSING);
 };
 
-Renderer.prototype.list = function(childNode, isOrdered) {
+Renderer.prototype.list = function (childNode, isOrdered) {
   return new ElementNode(isOrdered ? 'ol' : 'ul', [], [childNode]);
 };
 
-Renderer.prototype.listitem = function(childNode) {
+Renderer.prototype.listitem = function (childNode) {
   return new ElementNode('li', [], [childNode]);
 };
 
-Renderer.prototype.paragraph = function(childNode) {
+Renderer.prototype.paragraph = function (childNode) {
   return new ElementNode('p', [], [childNode]);
 };
 
 // span level renderer
-Renderer.prototype.strong = function(childNode) {
+Renderer.prototype.strong = function (childNode) {
   return new ElementNode('strong', [], [childNode]);
 };
 
-Renderer.prototype.em = function(childNode) {
+Renderer.prototype.em = function (childNode) {
   return new ElementNode('em', [], [childNode]);
 };
 
-Renderer.prototype.codespan = function(text) {
+Renderer.prototype.codespan = function (text) {
   return new ElementNode('code', [], [new TextNode(text)]);
 };
 
-Renderer.prototype.br = function() {
+Renderer.prototype.br = function () {
   return new ElementNode('br', [], SELF_CLOSING);
 };
 
-Renderer.prototype.del = function(childNode) {
+Renderer.prototype.del = function (childNode) {
   return new ElementNode('del', [], [childNode]);
 };
 
-Renderer.prototype.ins = function(childNode) {
+Renderer.prototype.ins = function (childNode) {
   return new ElementNode('ins', [], [childNode]);
 };
 
-Renderer.prototype.link = function(href, title, childNode) {
+Renderer.prototype.link = function (href, title, childNode) {
   var attributes = [{name: 'href', value: href}];
   if (title) {
     attributes.push({name: 'title', value: title});
@@ -661,7 +662,7 @@ Renderer.prototype.link = function(href, title, childNode) {
   return new ElementNode('a', attributes, [childNode]);
 };
 
-Renderer.prototype.image = function(href, title, alt) {
+Renderer.prototype.image = function (href, title, alt) {
   var attributes = [{name: 'src', value: href}];
   if (title) {
     attributes.push({name: 'title', value: title});
@@ -678,7 +679,7 @@ Renderer.prototype.image = function(href, title, alt) {
   }
 };
 
-Renderer.prototype.text = function(childNode) {
+Renderer.prototype.text = function (childNode) {
   return childNode;
 };
 
@@ -699,7 +700,7 @@ function Parser(options) {
  * Static Parse Method
  */
 
-Parser.parse = function(src, options, renderer) {
+Parser.parse = function (src, options, renderer) {
   var parser = new Parser(options, renderer);
   return parser.parse(src);
 };
@@ -708,7 +709,7 @@ Parser.parse = function(src, options, renderer) {
  * Parse Loop
  */
 
-Parser.prototype.parse = function(src) {
+Parser.prototype.parse = function (src) {
   this.inline = new InlineLexer(src.links, this.options, this.renderer);
   this.tokens = src.slice().reverse();
 
@@ -724,7 +725,7 @@ Parser.prototype.parse = function(src) {
  * Next Token
  */
 
-Parser.prototype.next = function() {
+Parser.prototype.next = function () {
   return (this.token = this.tokens.pop());
 };
 
@@ -732,7 +733,7 @@ Parser.prototype.next = function() {
  * Preview Next Token
  */
 
-Parser.prototype.peek = function() {
+Parser.prototype.peek = function () {
   return this.tokens[this.tokens.length - 1] || 0;
 };
 
@@ -740,7 +741,7 @@ Parser.prototype.peek = function() {
  * Parse Text Tokens
  */
 
-Parser.prototype.parseText = function() {
+Parser.prototype.parseText = function () {
   var body = this.token.text;
 
   while (this.peek().type === 'text') {
@@ -754,7 +755,7 @@ Parser.prototype.parseText = function() {
  * Parse Current Token
  */
 
-Parser.prototype.tok = function() {
+Parser.prototype.tok = function () {
   switch (this.token.type) {
     case 'space': {
       return new TextNode('');
